@@ -14,6 +14,7 @@ from typing import Annotated
 from uuid import UUID
 
 from fastapi import Depends, Header
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -80,8 +81,35 @@ def get_stats_processor(
 
 # ── Authentication dependency ──────────────────────────────────
 
+from fastapi.security.base import SecurityBase
+from fastapi.openapi.models import HTTPBearer as HTTPBearerModel
+from fastapi import Request
+
+class CustomBearer(SecurityBase):
+    def __init__(self, scheme_name: str | None = None, auto_error: bool = True):
+        self.model = HTTPBearerModel(description="JWT Bearer Token")
+        self.scheme_name = scheme_name or self.__class__.__name__
+        self.auto_error = auto_error
+
+    async def __call__(self, request: Request) -> HTTPAuthorizationCredentials | None:
+        authorization = request.headers.get("Authorization")
+        if not authorization:
+            if self.auto_error:
+                raise AuthenticationError("missing authorization header")
+            return None
+        
+        parts = authorization.split(" ")
+        if len(parts) != 2 or parts[0].lower() != "bearer":
+            if self.auto_error:
+                raise AuthenticationError("invalid authorization header format")
+            return None
+            
+        return HTTPAuthorizationCredentials(scheme=parts[0], credentials=parts[1])
+
+security = CustomBearer(auto_error=True)
+
 async def get_current_user(
-    authorization: Annotated[str | None, Header()] = None,
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
     user_repo: UserRepository = Depends(get_user_repo),
 ) -> User:
     """
@@ -89,14 +117,7 @@ async def get_current_user(
     Returns the authenticated User domain entity.
     Raises AuthenticationError (→ 401) on any failure.
     """
-    if not authorization:
-        raise AuthenticationError("missing authorization header")
-
-    parts = authorization.split(" ")
-    if len(parts) != 2 or parts[0].lower() != "bearer":
-        raise AuthenticationError("invalid authorization header format")
-
-    token = parts[1]
+    token = credentials.credentials
     try:
         payload = decode_access_token(token)
     except JWTError:

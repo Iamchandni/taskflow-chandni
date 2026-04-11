@@ -82,12 +82,23 @@ async def pydantic_validation_handler(request: Request, exc: RequestValidationEr
     """
     fields = {}
     for error in exc.errors():
+        error_type = error.get("type", "")
+
+        # Handle JSON decode errors (malformed body / wrong content type)
+        if "json" in error_type.lower():
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "error": "invalid request body",
+                    "message": "Request body must be valid JSON with Content-Type: application/json",
+                },
+            )
+
         # Get the field name from the location tuple
         loc = error.get("loc", ())
-        field_name = str(loc[-1]) if loc else "unknown"
-        # Skip 'body' prefix
-        if field_name == "body" and len(loc) > 1:
-            field_name = str(loc[-1])
+        # Extract the actual field name, skipping 'body' prefix
+        field_parts = [str(l) for l in loc if str(l) != "body"]
+        field_name = ".".join(field_parts) if field_parts else "unknown"
 
         msg = error.get("msg", "invalid")
         # Simplify common Pydantic messages

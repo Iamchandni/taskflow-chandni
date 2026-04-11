@@ -27,7 +27,15 @@ from app.domain.dtos.project_dto import (
 from app.domain.entities.user import User
 from app.shared.constants import DEFAULT_LIMIT, DEFAULT_PAGE
 
-router = APIRouter(prefix="/projects", tags=["Projects"])
+router = APIRouter(
+    prefix="/projects",
+    tags=["Projects"],
+    responses={
+        status.HTTP_401_UNAUTHORIZED: {"description": "Missing or invalid token"},
+        status.HTTP_403_FORBIDDEN: {"description": "Not authorized to perform this action"},
+        status.HTTP_404_NOT_FOUND: {"description": "Project not found"},
+    },
+)
 
 
 @router.get(

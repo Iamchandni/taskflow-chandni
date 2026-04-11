@@ -24,13 +24,23 @@ class TaskModel(Base):
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    status: Mapped[str] = mapped_column(
-        SAEnum(TaskStatus, name="task_status", create_type=False),
+    status: Mapped[TaskStatus] = mapped_column(
+        SAEnum(
+            TaskStatus,
+            name="task_status",
+            create_type=False,
+            values_callable=lambda obj: [e.value for e in obj],
+        ),
         nullable=False,
         default=TaskStatus.TODO,
     )
-    priority: Mapped[str] = mapped_column(
-        SAEnum(TaskPriority, name="task_priority", create_type=False),
+    priority: Mapped[TaskPriority] = mapped_column(
+        SAEnum(
+            TaskPriority,
+            name="task_priority",
+            create_type=False,
+            values_callable=lambda obj: [e.value for e in obj],
+        ),
         nullable=False,
         default=TaskPriority.MEDIUM,
     )
