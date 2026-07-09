@@ -10,7 +10,7 @@ a pure dataclass with no SQLAlchemy dependency.
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import String, DateTime
+from sqlalchemy import String, DateTime, Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -28,6 +28,11 @@ class UserModel(Base):
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+    role: Mapped[str] = mapped_column(
+        SAEnum("admin", "member", name="user_role"),
+        nullable=False,
+        server_default="member",
     )
 
     # Relationships

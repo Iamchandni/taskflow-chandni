@@ -13,9 +13,11 @@ from uuid import UUID, uuid4
 
 from app.core.exceptions import AuthorizationError, NotFoundError
 from app.core.logging import get_logger
+from app.core.rbac import can_manage_task
 from app.domain.dtos.common_dto import PaginatedResponse
 from app.domain.dtos.task_dto import TaskCreateRequest, TaskResponse, TaskUpdateRequest
 from app.domain.entities.task import Task
+from app.domain.entities.user import User
 from app.domain.interfaces.project_repository import IProjectRepository
 from app.domain.interfaces.task_repository import ITaskRepository
 from app.shared.constants import DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT
@@ -91,12 +93,16 @@ class TaskService:
         )
 
     async def update_task(
-        self, task_id: UUID, request: TaskUpdateRequest
+        self, task_id: UUID, request: TaskUpdateRequest, current_user: User
     ) -> TaskResponse:
-        """Update a task's mutable fields."""
+        """Update a task's mutable fields. Creator, project owner, or admin only."""
         task = await self._task_repo.get_by_id(task_id)
         if not task:
             raise NotFoundError("not found")
+
+        project = await self._project_repo.get_by_id(task.project_id)
+        if not can_manage_task(current_user, task, project):
+            raise AuthorizationError("permission denied")
 
         if request.title is not None:
             task.title = request.title
@@ -116,28 +122,18 @@ class TaskService:
 
         return self._to_response(updated)
 
-    async def delete_task(self, task_id: UUID, user_id: UUID) -> None:
-        """
-        Delete a task. Only the project owner or task creator can delete.
-        """
+    async def delete_task(self, task_id: UUID, current_user: User) -> None:
+        """Delete a task. Creator, project owner, or admin only."""
         task = await self._task_repo.get_by_id(task_id)
         if not task:
             raise NotFoundError("not found")
 
-        # Check: is the user the task creator?
-        if task.creator_id == user_id:
-            await self._task_repo.delete(task_id)
-            logger.info("task_deleted", task_id=str(task_id), by="creator")
-            return
-
-        # Check: is the user the project owner?
         project = await self._project_repo.get_by_id(task.project_id)
-        if project and project.owner_id == user_id:
-            await self._task_repo.delete(task_id)
-            logger.info("task_deleted", task_id=str(task_id), by="project_owner")
-            return
+        if not can_manage_task(current_user, task, project):
+            raise AuthorizationError("permission denied")
 
-        raise AuthorizationError("permission denied")
+        await self._task_repo.delete(task_id)
+        logger.info("task_deleted", task_id=str(task_id))
 
     @staticmethod
     def _to_response(task: Task) -> TaskResponse:

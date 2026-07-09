@@ -23,6 +23,11 @@ class TaskPriority(str, Enum):
     HIGH = "high"
 
 
+class UserRole(str, Enum):
+    ADMIN = "admin"
+    MEMBER = "member"
+
+
 # ── Pagination defaults ────────────────────────────────────────
 
 DEFAULT_PAGE = 1

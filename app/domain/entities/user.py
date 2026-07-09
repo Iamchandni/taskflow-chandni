@@ -12,6 +12,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from uuid import UUID, uuid4
 
+from app.shared.constants import UserRole
+
 
 @dataclass
 class User:
@@ -22,3 +24,4 @@ class User:
     email: str = ""
     password: str = ""  # bcrypt hash — never plain text
     created_at: datetime = field(default_factory=datetime.utcnow)
+    role: str = UserRole.MEMBER.value

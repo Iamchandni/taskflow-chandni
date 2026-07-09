@@ -14,6 +14,7 @@ from uuid import UUID, uuid4
 
 from app.core.exceptions import AuthorizationError, NotFoundError
 from app.core.logging import get_logger
+from app.core.rbac import can_manage_project
 from app.domain.dtos.project_dto import (
     ProjectCreateRequest,
     ProjectDetailResponse,
@@ -23,6 +24,7 @@ from app.domain.dtos.project_dto import (
 )
 from app.domain.dtos.common_dto import PaginatedResponse
 from app.domain.entities.project import Project
+from app.domain.entities.user import User
 from app.domain.interfaces.project_repository import IProjectRepository
 from app.domain.interfaces.task_repository import ITaskRepository
 from app.shared.constants import DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT
@@ -117,13 +119,13 @@ class ProjectService:
         )
 
     async def update_project(
-        self, project_id: UUID, request: ProjectUpdateRequest, user_id: UUID
+        self, project_id: UUID, request: ProjectUpdateRequest, current_user: User
     ) -> ProjectResponse:
-        """Update a project. Only the owner can update."""
+        """Update a project. Owner or admin can update."""
         project = await self._project_repo.get_by_id(project_id)
         if not project:
             raise NotFoundError("not found")
-        if project.owner_id != user_id:
+        if not can_manage_project(current_user, project):
             raise AuthorizationError("permission denied")
 
         if request.name is not None:
@@ -142,12 +144,12 @@ class ProjectService:
             created_at=updated.created_at,
         )
 
-    async def delete_project(self, project_id: UUID, user_id: UUID) -> None:
-        """Delete a project and all its tasks. Only the owner can delete."""
+    async def delete_project(self, project_id: UUID, current_user: User) -> None:
+        """Delete a project and all its tasks. Owner or admin can delete."""
         project = await self._project_repo.get_by_id(project_id)
         if not project:
             raise NotFoundError("not found")
-        if project.owner_id != user_id:
+        if not can_manage_project(current_user, project):
             raise AuthorizationError("permission denied")
 
         await self._project_repo.delete(project_id)

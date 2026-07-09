@@ -94,7 +94,7 @@ async def update_project(
     project_service: ProjectService = Depends(get_project_service),
 ):
     """Update project name/description. Owner only."""
-    return await project_service.update_project(project_id, request, current_user.id)
+    return await project_service.update_project(project_id, request, current_user)
 
 
 @router.delete(
@@ -108,7 +108,7 @@ async def delete_project(
     project_service: ProjectService = Depends(get_project_service),
 ):
     """Delete a project and all its tasks. Owner only."""
-    await project_service.delete_project(project_id, current_user.id)
+    await project_service.delete_project(project_id, current_user)
     return MessageResponse(message="project deleted")
 
 

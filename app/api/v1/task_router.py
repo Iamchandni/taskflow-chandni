@@ -77,7 +77,7 @@ async def update_task(
     task_service: TaskService = Depends(get_task_service),
 ):
     """Update task title, description, status, priority, assignee, or due_date."""
-    return await task_service.update_task(task_id, request)
+    return await task_service.update_task(task_id, request, current_user)
 
 
 @router.delete(
@@ -91,5 +91,5 @@ async def delete_task(
     task_service: TaskService = Depends(get_task_service),
 ):
     """Delete a task. Project owner or task creator only."""
-    await task_service.delete_task(task_id, current_user.id)
+    await task_service.delete_task(task_id, current_user)
     return MessageResponse(message="task deleted")

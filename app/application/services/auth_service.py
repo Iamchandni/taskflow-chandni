@@ -18,6 +18,7 @@ from app.core.security import create_access_token, hash_password, verify_passwor
 from app.domain.dtos.auth_dto import LoginRequest, RegisterRequest, TokenResponse, UserResponse
 from app.domain.entities.user import User
 from app.domain.interfaces.user_repository import IUserRepository
+from app.shared.constants import UserRole
 
 logger = get_logger(__name__)
 
@@ -45,6 +46,7 @@ class AuthService:
             name=request.name,
             email=request.email,
             password=hash_password(request.password),
+            role=UserRole.MEMBER.value,
         )
 
         created = await self._user_repo.create(user)
@@ -54,6 +56,7 @@ class AuthService:
             id=created.id,
             name=created.name,
             email=created.email,
+            role=created.role,
             created_at=created.created_at,
         )
 
