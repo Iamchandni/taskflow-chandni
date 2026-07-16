@@ -16,4 +16,11 @@ describe('App', () => {
   test('App renders without throwing', () => {
     expect(() => render(<App />)).not.toThrow()
   })
+
+  test('App displays the Nightshift pipeline message', () => {
+    render(<App />)
+    expect(
+      screen.getByText('----Created this frontend for taskflow using Nightshift pipeline----')
+    ).toBeInTheDocument()
+  })
 })
