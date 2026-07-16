@@ -4,7 +4,7 @@ function App() {
   return (
     <main className="app">
       <h1>TaskFlow Frontend Initialized</h1>
-      <p>The frontend application is running successfully.</p>
+      <p>----Created this frontend for taskflow using Nightshift pipeline----</p>
     </main>
   )
 }
