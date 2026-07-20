@@ -1,12 +1,9 @@
+import { RouterProvider } from 'react-router-dom'
+import { router } from './router'
 import './App.css'
 
 function App() {
-  return (
-    <main className="app">
-      <h1>TaskFlow Frontend Initialized</h1>
-      <p>----Created this frontend for taskflow using Nightshift pipeline----</p>
-    </main>
-  )
+  return <RouterProvider router={router} />
 }
 
 export default App
