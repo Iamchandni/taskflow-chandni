@@ -75,7 +75,33 @@ Go to **[http://localhost:8000/docs](http://localhost:8000/docs)** to test via t
 - `PATCH /tasks/{id}` - Update a task
 - `DELETE /tasks/{id}` - Delete a task
 
-## 7. What You'd Do With More Time
+## 7. Frontend
+
+The React frontend lives in `frontend/` and is built with Vite 4, React 18, TypeScript 5 (strict), and React Router v6.
+
+### Structure
+
+```
+frontend/src/
+├── router/        # createBrowserRouter routes; / redirects to /dashboard
+├── layouts/       # AppLayout — sidebar + header + <Outlet /> content area
+├── components/    # Sidebar, Header, Navigation (NavLink-based, active highlighting)
+└── pages/         # Dashboard, Projects, Tasks, Statistics, Login
+```
+
+`/login` renders outside `AppLayout`; all other routes render inside it.
+
+### Running the frontend
+
+```bash
+cd frontend
+npm install
+npm run dev        # dev server at http://localhost:5173
+npm run build      # tsc && vite build (strict TS)
+npm test           # vitest run
+```
+
+## 8. What You'd Do With More Time
 **Honest Reflection:**
 - **Shortcuts Taken**: My test suite heavily focuses on robust HTTP-level integration testing rather than deeply parsing isolated Domain Entity unit tests.
 - **Improvements via More Time**:
