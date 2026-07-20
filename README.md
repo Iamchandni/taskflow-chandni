@@ -5,6 +5,7 @@ TaskFlow is a production-grade task management REST API. It allows users to secu
 
 **Tech Stack**:
 - **Framework**: FastAPI (Python 3.12)
+- **Frontend**: React (Vite + TypeScript)
 - **Database**: PostgreSQL 16
 - **Containerization**: Docker & Docker Compose (featuring Multi-stage builds)
 - **Migrations**: Alembic
@@ -16,7 +17,7 @@ The project strictly follows **Domain-Driven Design (DDD)**.
 - **Why this structure?** It ensures a clean separation of concerns. Layers are strictly split into `api` (HTTP delivery), `application` (use-case orchestration), `domain` (pure business rules & entities), and `infrastructure` (database, ORM, implementation of interfaces).
 - **Tradeoffs**: DDD mapping introduces boilerplate (e.g., transforming ORM models to Domain Entities to DTO schemas). For a simple CRUD app, a basic MVC architecture would be faster to write. However, DDD ensures TaskFlow remains robust, testable, and strictly decoupled as it scales. 
 - **What was left out and why?** 
-  - A Frontend (React). Focus was deliberately aimed 100% on building a flawless, heavily structured backend API.
+  - Complex Role-Based Access Control (RBAC) on the frontend.
   - Complex Role-Based Access Control (RBAC). A simple "ownership" model was used instead of complex hierarchical permissions (Admin vs Manager) to keep the logic focused on the core DDD principles without muddying the domain logic too early.
 
 ## 3. Running Locally
